@@ -1,0 +1,19 @@
+---
+- hosts: all
+  become: yes
+  vars:
+    web_hosts:
+      - 172.28.128.11
+      - 172.28.128.12
+  tasks:
+  - name: install haproxy
+    yum: name=haproxy state=present
+
+  - name: copy file
+    template: src=haproxy.cfg.j2 dest=/etc/haproxy/haproxy.cfg
+    notify:
+    - restart haproxy
+  
+  handlers: 
+    - name: restart haproxy
+      service: name=haproxy state=restarted

@@ -1,0 +1,32 @@
+global
+
+    log         127.0.0.1 local2
+
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group       haproxy
+    daemon
+
+    # turn on stats unix socket
+    stats socket /var/lib/haproxy/stats
+
+
+defaults
+    mode                    http
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option                  redispatch
+    retries                 3
+
+frontend  main *:80
+    default_backend             webapp
+
+backend webapp
+    option httpchk 'GET / HTTP/1.1\r\nHost:localhost'
+    {% for host in web_hosts %}
+    server  app {{host}}:80 check
+    {% endfor %}
